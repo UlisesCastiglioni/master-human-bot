@@ -2,34 +2,37 @@ name: Ejecutar MASTER-HUMAN Bot Diario
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 03:00 AM UTC (Aprox 00:00 en Argentina)
-    - cron: '0 3 * * *'
-  workflow_dispatch: # Esto te permite ejecutarlo manualmente con un botón
+    - cron: '0 3 * * *' # Se ejecuta a las 00:00 de Argentina (03:00 UTC)
+  workflow_dispatch: # Permite ejecutarlo a mano con el botón
+
+# ESTO ES LO QUE FALTABA: Permiso para que el bot pueda guardar el archivo CSV
+permissions:
+  contents: write
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Clonar el código
-      uses: actions/checkout@v3
-      
-    - name: Configurar Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        
-    - name: Instalar librerías
-      run: |
-        pip install pytrends yfinance pandas
-        
-    - name: Ejecutar el Robot (extractor.py)
-      run: python extractor.py
-      
-    - name: Guardar los nuevos datos en GitHub
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action Bot"
-        git add historial_svix.csv
-        git commit -m "Actualizacion diaria de S-VIX" || echo "No hay cambios para subir"
-        git push
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4 # Actualizado a v4 (Soluciona el error Node 20)
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5 # Actualizado a v5 (Soluciona el error Node 20)
+        with:
+          python-version: '3.10'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas yfinance pytrends
+
+      - name: Ejecutar el Robot de Extracción
+        run: python extractor.py
+
+      - name: Guardar los datos en GitHub
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add historial_svix.csv
+          git commit -m "🤖 Actualización automática de datos S-VIX y Sectores" || echo "No hay cambios para guardar"
+          git push
