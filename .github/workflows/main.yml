@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+# SOLUCIÓN AL AVISO DE NODE.JS: Forzamos la versión 24 como pide GitHub
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
